@@ -32,6 +32,7 @@ export class PubSubClient {
    * Publicerar ett meddelande asynkront.
    */
   async publish(topicName: string, data: any) {
+    await this.ensureTopic(topicName);
     const topic = this.pubsub.topic(topicName);
     const dataBuffer = Buffer.from(JSON.stringify(data));
     
