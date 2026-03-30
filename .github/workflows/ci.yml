@@ -14,27 +14,30 @@ jobs:
     - name: Checkout kalles-traffic
       uses: actions/checkout@v4
       with:
-        path: kalles-traffic
+        path: kalles-buss/kalles-traffic
 
     - name: Checkout kalles-finance (for shared schemas)
       uses: actions/checkout@v4
       with:
         repository: fmanh3/kalles-finance
-        path: kalles-finance
-        # Assumes the repo is public or the runner has access
+        path: kalles-buss/kalles-finance
 
     - name: Use Node.js 22.x
       uses: actions/setup-node@v4
       with:
         node-version: '22.x'
 
-    - name: Install dependencies
+    - name: Install Finance dependencies
       run: npm ci
-      working-directory: ./kalles-traffic
+      working-directory: kalles-buss/kalles-finance
+
+    - name: Install Traffic dependencies
+      run: npm ci
+      working-directory: kalles-buss/kalles-traffic
 
     - name: Build TypeScript
       run: npm run build
-      working-directory: ./kalles-traffic
+      working-directory: kalles-buss/kalles-traffic
 
     # Kalles Traffic har inga riktiga tester än, så vi kommenterar ut npm test för att inte faila bygget
     # - name: Run tests
