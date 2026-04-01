@@ -5,7 +5,7 @@ WORKDIR /app
 # Install dependencies for the specific service
 WORKDIR /app/kalles-traffic
 COPY kalles-traffic/package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy the entire monorepo so cross-repo relative imports work
 WORKDIR /app

@@ -1,9 +1,17 @@
 import { v4 as uuidv4 } from 'uuid';
+import express from 'express';
 import { PubSubClient } from './infrastructure/messaging/pubsub-client';
 import { BusPositionUpdatedSchema, type BusPositionUpdated } from './domain/events/bus-position-updated';
 import { ApcEventSchema, type ApcEvent } from '../../kalles-finance/packages/shared-schemas/src/traffic-events';
 
 async function start() {
+  // Start a minimal heartbeat server for Cloud Run health checks
+  const app = express();
+  const port = process.env.PORT || 8080;
+  app.get('/', (req, res) => res.send('Kalles Buss Traffic Simulator is running! 🚌'));
+  app.get('/health', (req, res) => res.send('OK'));
+  app.listen(port, () => console.log(`[Health] Heartbeat server listening on port ${port}`));
+
   const pubsub = new PubSubClient();
   const TELEMETRY_TOPIC = 'traffic-telemetry';
   const EVENTS_TOPIC = 'traffic-events';
