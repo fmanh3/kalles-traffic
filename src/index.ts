@@ -1,15 +1,50 @@
 import { v4 as uuidv4 } from 'uuid';
 import express from 'express';
+import Knex from 'knex';
+import config from '../knexfile';
 import { PubSubClient } from './infrastructure/messaging/pubsub-client';
 import { BusPositionUpdatedSchema, type BusPositionUpdated } from './domain/events/bus-position-updated';
 import { ApcEventSchema, type ApcEvent } from '../../kalles-finance/packages/shared-schemas/src/traffic-events';
 
 async function start() {
+  const db = Knex(config.development!);
+  
   // Start a minimal heartbeat server for Cloud Run health checks
   const app = express();
   const port = process.env.PORT || 8080;
   app.get('/', (req, res) => res.send('Kalles Buss Traffic Simulator is running! 🚌'));
-  app.get('/health', (req, res) => res.send('OK'));
+  
+  // API: Fordonsstatus (Digital Tvilling Level 1)
+  app.get('/vehicles/:id/status', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const vehicle = await db('vehicles').where({ id }).first();
+      const status = await db('vehicle_status').where({ vehicle_id: id }).first();
+      
+      if (!vehicle) {
+        return res.status(404).json({ error: 'Vehicle not found' });
+      }
+
+      res.json({
+        id: vehicle.id,
+        model: vehicle.model_name,
+        type: vehicle.type,
+        capacity: vehicle.passenger_capacity,
+        battery: {
+          totalKwh: vehicle.battery_capacity_kwh,
+          currentSoc: status?.current_soc || 100,
+        },
+        location: {
+          lat: status?.current_lat,
+          lon: status?.current_lon
+        },
+        lastSeen: status?.last_telemetry_at
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.listen(port, () => console.log(`[Health] Heartbeat server listening on port ${port}`));
 
   const pubsub = new PubSubClient();
