@@ -10,10 +10,6 @@ const config: { [key: string]: Knex.Config } = {
       password: process.env.DB_PASSWORD || 'kalles_traffic_password_local',
       database: process.env.DB_NAME || 'kalles_traffic'
     },
-    pool: {
-      min: 2,
-      max: 10
-    },
     migrations: {
       tableName: "knex_migrations"
     }
