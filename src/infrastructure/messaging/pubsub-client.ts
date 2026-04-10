@@ -59,7 +59,7 @@ export class PubSubClient {
     }
 
     const subscription = this.pubsub.subscription(subscriptionName);
-    subscription.on('message', (message) => {
+    subscription.on('message', async (message: any) => {
       const data = JSON.parse(message.data.toString());
       handler(data);
       message.ack();
